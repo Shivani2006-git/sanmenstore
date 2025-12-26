@@ -361,16 +361,26 @@ body {
         transform: none;
     }
 
-    /* Auth Page: Show image on top */
+    /* Auth Page: Premium Full Background */
     .auth-container {
         flex-direction: column;
+        background-image: url('prod1.jpg');
+        background-size: cover;
+        background-position: center;
+        min-height: 100vh;
     }
 
     .auth-image {
-        display: block;
-        height: 250px;
-        flex: none;
+        display: none !important;
+    }
+
+    .auth-form-section {
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
         width: 100%;
+        min-height: 100vh;
+        justify-content: center;
     }
 }
 
