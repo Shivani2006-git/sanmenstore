@@ -353,9 +353,35 @@ body {
     background-position: center;
 }
 
-@media (min-width: 768px) {
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+
+    /* Reset 3D Robot position to center on mobile */
+    #canvas-container {
+        transform: none;
+    }
+
+    /* Auth Page: Show image on top */
+    .auth-container {
+        flex-direction: column;
+    }
+
     .auth-image {
         display: block;
+        height: 250px;
+        flex: none;
+        width: 100%;
+    }
+}
+
+/* Existing Desktop Styles */
+@media (min-width: 769px) {
+
+    /* Changed breakpoint slightly to avoid conflict */
+    .auth-image {
+        display: block;
+        flex: 1;
+        height: auto;
     }
 }
 
