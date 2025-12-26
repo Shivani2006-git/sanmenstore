@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details | SAN</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .product-detail-container {
+            padding: 120px 10%;
+            display: flex;
+            align-items: center;
+            gap: 4rem;
+            min-height: 80vh;
+        }
+
+        .detail-image-box {
+            flex: 1;
+            height: 500px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 8px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .detail-content-box {
+            flex: 1;
+            color: var(--text-primary);
+        }
+
+        .detail-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            line-height: 1.1;
+        }
+
+        .detail-price {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 2rem;
+            font-weight: 300;
+        }
+
+        .detail-desc {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+        }
+
+        .add-cart-btn {
+            background: var(--text-primary);
+            color: var(--bg-color);
+            padding: 1.2rem 3rem;
+            font-size: 1.2rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .add-cart-btn:hover {
+            background: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .product-detail-container {
+                flex-direction: column;
+                padding-top: 100px;
+            }
+
+            .detail-image-box {
+                width: 100%;
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="logo">SAN</div>
+        <div class="nav-links">
+            <a href="index.html" class="nav-item">Shop</a>
+            <a href="cart.html" class="nav-item">Cart (<span id="cart-count">0</span>)</a>
+        </div>
+    </nav>
+
+    <div id="loading" style="text-align: center; padding-top: 200px; color: white;">Loading Product...</div>
+
+    <div class="product-detail-container" id="product-content" style="display: none;">
+        <div class="detail-image-box" id="p-img"></div>
+        <div class="detail-content-box">
+            <h1 class="detail-title" id="p-name"></h1>
+            <div class="detail-price" id="p-price"></div>
+            <p class="detail-desc" id="p-desc"></p>
+            <button class="add-cart-btn" onclick="addToCart()">
+                Add to Cart
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Get Product ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const pid = urlParams.get('id') || 1; // Default to 1 if missing
+
+        let currentProduct = null;
+
+        async function loadProduct() {
+            try {
+                const res = await fetch(`/api/products/${pid}`);
+                if (!res.ok) throw new Error('Product not found');
+
+                const product = await res.json();
+                currentProduct = product;
+
+                document.getElementById('p-img').style.backgroundImage = `url('${product.image}')`;
+                document.getElementById('p-name').innerText = product.name;
+                document.getElementById('p-price').innerText = '₹' + product.price.toLocaleString('en-IN');
+                document.getElementById('p-desc').innerText = product.description;
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('product-content').style.display = 'flex';
+            } catch (e) {
+                document.getElementById('loading').innerText = 'Product not found.';
+            }
+        }
+
+        function addToCart() {
+            if (!currentProduct) return;
+
+            let cart = JSON.parse(localStorage.getItem('san_cart') || '[]');
+            cart.push(currentProduct);
+            localStorage.setItem('san_cart', JSON.stringify(cart));
+
+            alert('Added to Cart!');
+            updateCartCount();
+        }
+
+        function updateCartCount() {
+            const cart = JSON.parse(localStorage.getItem('san_cart') || '[]');
+            document.getElementById('cart-count').innerText = cart.length;
+        }
+
+        loadProduct();
+        updateCartCount();
+    </script>
+</body>
+
+</html>

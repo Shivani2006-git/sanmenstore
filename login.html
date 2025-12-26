@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | SAN</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="auth-container">
+        <div class="auth-image" style="background-image: url('prod1.jpg');"></div>
+        <div class="auth-form-section">
+            <div class="auth-card">
+                <div id="auth-error"
+                    style="display: none; background: rgba(220, 53, 69, 0.2); color: #ff6b6b; padding: 10px; margin-bottom: 15px; border-radius: 4px; border: 1px solid rgba(220, 53, 69, 0.3); text-align: center; font-size: 0.9rem;">
+                </div>
+                <h2>Welcome Back</h2>
+                <form id="login-form">
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" required placeholder="name@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-input" required placeholder="••••••••">
+                    </div>
+                    <button type="submit" class="auth-btn">Sign In</button>
+                </form>
+                <form id="signup-form" style="display: none;">
+                    <div class="form-group">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-input" required placeholder="Your Name">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" required placeholder="name@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-input" required placeholder="••••••••">
+                    </div>
+                    <button type="submit" class="auth-btn">Sign Up</button>
+                </form>
+                <div class="auth-switch">
+                    Don't have an account? <a href="#" id="toggle-signup">Sign Up</a>
+                    <span id="toggle-login" style="display: none;">Already have an account? <a href="#">Sign
+                            In</a></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // UI Helper
+        function showError(message) {
+            const errorDiv = document.getElementById('auth-error');
+            errorDiv.style.display = 'block';
+            errorDiv.innerText = message;
+            // Shake animation effect
+            errorDiv.style.transform = 'translateX(5px)';
+            setTimeout(() => errorDiv.style.transform = 'translateX(-5px)', 50);
+            setTimeout(() => errorDiv.style.transform = 'translateX(0)', 100);
+        }
+
+        function clearError() {
+            document.getElementById('auth-error').style.display = 'none';
+        }
+
+        // API Handling
+        async function handleLogin(event) {
+            event.preventDefault();
+            clearError();
+            const email = event.target.querySelector('input[type="email"]').value;
+            const password = event.target.querySelector('input[type="password"]').value;
+            const btn = event.target.querySelector('button');
+            const originalText = btn.innerText;
+
+            btn.innerText = 'Signing In...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Success (Optional: visual success feedback)
+                    window.location.href = 'index.html';
+                } else {
+                    showError(data.error || 'Login failed');
+                }
+            } catch (e) {
+                showError('Connection error. Please try again.');
+                console.error(e);
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        async function handleSignup(event) {
+            event.preventDefault();
+            clearError();
+            const inputs = event.target.querySelectorAll('input');
+            const name = inputs[0].value;
+            const email = inputs[1].value;
+            const password = inputs[2].value;
+            const btn = event.target.querySelector('button');
+            const originalText = btn.innerText;
+
+            btn.innerText = 'Creating Account...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Show message in box instead of alert if successful? 
+                    // No, success usually means transition. 
+                    // But if we want to follow user rule "if any thing show up it need to me showup the box":
+                    // I will showError with GREEN background for success?
+                    // Or just alert here is fine? "Account created".
+                    // I'll stick to alert for success (so they know to switch), OR auto-switch and show green box.
+                    // I'll Auto-Switch and show Green Box.
+
+                    toggleAuth();
+                    document.querySelector('#login-form input[type="email"]').value = email;
+
+                    const errorDiv = document.getElementById('auth-error');
+                    errorDiv.style.background = 'rgba(40, 167, 69, 0.2)';
+                    errorDiv.style.color = '#75b798';
+                    errorDiv.style.borderColor = 'rgba(40, 167, 69, 0.3)';
+                    showError('Account created! Please sign in.');
+                } else {
+                    showError(data.error || 'Signup failed');
+                }
+            } catch (e) {
+                showError('Connection error. Please try again.');
+                console.error(e);
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        // Toggle Logic
+        function toggleAuth() {
+            clearError(); // Clear errors on toggle
+            // Reset error box style to red
+            const errorDiv = document.getElementById('auth-error');
+            errorDiv.style.background = 'rgba(220, 53, 69, 0.2)';
+            errorDiv.style.color = '#ff6b6b';
+            errorDiv.style.borderColor = 'rgba(220, 53, 69, 0.3)';
+
+            const loginForm = document.getElementById('login-form');
+            const signupForm = document.getElementById('signup-form');
+            const toggleSignupLink = document.getElementById('toggle-signup');
+            const toggleLoginSpan = document.getElementById('toggle-login');
+
+            if (loginForm.style.display !== 'none') {
+                loginForm.style.display = 'none';
+                signupForm.style.display = 'block';
+                toggleSignupLink.style.display = 'none';
+                toggleLoginSpan.style.display = 'inline';
+                document.querySelector('.auth-card h2').innerText = 'Create Account';
+            } else {
+                signupForm.style.display = 'none';
+                loginForm.style.display = 'block';
+                toggleLoginSpan.style.display = 'none';
+                toggleSignupLink.style.display = 'inline';
+                document.querySelector('.auth-card h2').innerText = 'Welcome Back';
+            }
+        }
+
+        // Initial listeners
+        document.getElementById('login-form').addEventListener('submit', handleLogin);
+        document.getElementById('signup-form').addEventListener('submit', handleSignup);
+        document.getElementById('toggle-signup').addEventListener('click', (e) => {
+            e.preventDefault();
+            toggleAuth();
+        });
+        document.getElementById('toggle-login').addEventListener('click', (e) => {
+            e.preventDefault();
+            toggleAuth();
+        });
+    </script>
+</body>
+
+</html>
