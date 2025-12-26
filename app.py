@@ -41,17 +41,20 @@ def signup():
     if not email or not password:
         return jsonify({"error": "Missing fields"}), 400
 
+    conn = None
     try:
         conn = sqlite3.connect(DB_NAME)
         c = conn.cursor()
         c.execute("INSERT INTO users (email, password, name) VALUES (?, ?, ?)", (email, password, name))
         conn.commit()
-        conn.close()
         return jsonify({"message": "User created successfully"}), 201
     except sqlite3.IntegrityError:
         return jsonify({"error": "User already exists"}), 409
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    finally:
+        if conn:
+            conn.close()
 
 # API: Login
 @app.route('/api/login', methods=['POST'])
@@ -60,16 +63,22 @@ def login():
     email = data.get('email')
     password = data.get('password')
 
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("SELECT * FROM users WHERE email=? AND password=?", (email, password))
-    user = c.fetchone()
-    conn.close()
-
-    if user:
-        return jsonify({"message": "Login successful", "user": {"id": user[0], "email": user[1], "name": user[3]}}), 200
-    else:
-        return jsonify({"error": "Invalid credentials"}), 401
+    conn = None
+    try:
+        conn = sqlite3.connect(DB_NAME)
+        c = conn.cursor()
+        c.execute("SELECT * FROM users WHERE email=? AND password=?", (email, password))
+        user = c.fetchone()
+        
+        if user:
+            return jsonify({"message": "Login successful", "user": {"id": user[0], "email": user[1], "name": user[3]}}), 200
+        else:
+            return jsonify({"error": "Invalid credentials"}), 401
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if conn:
+            conn.close()
 
 # API: Get All Products
 @app.route('/api/products')
